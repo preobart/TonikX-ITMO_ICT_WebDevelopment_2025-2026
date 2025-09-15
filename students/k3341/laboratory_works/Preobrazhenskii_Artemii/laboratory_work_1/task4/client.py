@@ -19,7 +19,7 @@ def run_client():
     name = input('Введите имя: ')
     client_socket.sendall(name.encode())
 
-    threading.Thread(target=get_msg, args=(client_socket,)).start()
+    threading.Thread(target=get_msg, args=(client_socket,), daemon=True).start()
     try:
         while True:
             msg = input()

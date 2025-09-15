@@ -7,7 +7,7 @@ class GradesServer:
         self._host = host
         self._port = port
         self._server_name = server_name
-        self.data = []
+        self.data = {}
 
     def serve_forever(self):
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as serv_sock:
@@ -58,7 +58,13 @@ class GradesServer:
             if not params["grade"].isdigit():
                 raise ValueError("Оценка должна быть числом")
 
-            self.data.append((params["discipline"], params["grade"]))
+            discipline = params["discipline"]
+            grade = params["grade"]
+            
+            if discipline not in self.data:
+                self.data[discipline] = []
+
+            self.data[discipline].append(grade)
             return self.build_html()
 
         elif req["method"] == "GET":
@@ -72,7 +78,10 @@ class GradesServer:
                f"Content-Length: {len(body.encode('utf-8'))}\r\n\r\n{body}"
 
     def build_html(self):
-        items = "".join(f"<li>{discipline}: {grade}</li>" for discipline, grade in self.data)
+        items = ""
+        for discipline, grades in self.data.items():
+            grades_str = ", ".join(grades)  # все оценки через запятую
+            items += f"<li>{discipline}: {grades_str}</li>"
         html = f"<html><head><title>Grades</title></head><body><h2>Все оценки</h2><ul>{items}</ul></body></html>"
         return self.http_response(200, "OK", html)
 

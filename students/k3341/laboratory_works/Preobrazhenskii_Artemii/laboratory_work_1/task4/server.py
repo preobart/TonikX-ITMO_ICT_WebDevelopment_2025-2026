@@ -6,6 +6,9 @@ clients = []
 def connect_client(client_conn, client_addr):
     try:
         name = client_conn.recv(1024).decode('utf-8').strip()
+        if not name:
+            client_conn.close()
+            return
         clients.append(client_conn)
         print(f'{name}{client_addr} подключился к чату')
 
@@ -35,7 +38,7 @@ def run_server():
     try:
         while True:
             client_conn, client_addr = server_socket.accept()
-            threading.Thread(target=connect_client, args=(client_conn, client_addr)).start()
+            threading.Thread(target=connect_client, args=(client_conn, client_addr), daemon=True).start()
     except KeyboardInterrupt:
         print("\nСервер остановлен")
     finally:
