@@ -1,7 +1,6 @@
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
-from django.core.exceptions import ValidationError
 from django.db.models import Count
 from django.shortcuts import get_object_or_404, redirect, render
 
@@ -34,11 +33,9 @@ def tour_list(request):
 def tour_detail(request, tour_id):
     tour = get_object_or_404(Tour, id=tour_id)
     reviews = Review.objects.filter(tour=tour)
-    reservations = Reservation.objects.filter(tour=tour)
     return render(request, 'tours/tour_detail.html', {
         'tour': tour,
         'reviews': reviews,
-        'reservations': reservations
     })
 
 @login_required
@@ -50,17 +47,12 @@ def reserve_tour(request, tour_id):
         if form.is_valid():
             reservation = form.save(commit=False)
             reservation.user = request.user
-            reservation.tour = tour  
-            try:
-                reservation.full_clean()  
-            except ValidationError as e:
-                form.add_error(None, e)
-                return render(request, 'tours/reservation_form.html', {'form': form, 'tour': tour})
-
+            reservation.tour = tour
             reservation.save()
             return redirect('home')
     else:
         form = ReservationForm()
+
     return render(request, 'tours/reservation_form.html', {'form': form, 'tour': tour})
 
 @login_required
