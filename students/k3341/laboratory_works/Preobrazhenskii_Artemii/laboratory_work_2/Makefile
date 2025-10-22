@@ -5,7 +5,11 @@ SERVICE := app
 
 .PHONY: clean up down restart build logs shell manage migrate \
         makemigrations createsuperuser check clean-migrations\
-		update_dependencies
+		update_dependencies get_secret_key
+
+
+get_secret_key:
+	docker compose exec app python -c "from django.core.management.utils import get_random_secret_key as g; print(g())"
 
 clean:
 	@find . -name "*.pyc" -exec rm -rf {} \;
